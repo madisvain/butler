@@ -1,5 +1,6 @@
 #coding: utf-8
 
+import os
 from time import time, localtime
 
 from fabric.api import env, run, sudo, local, put
@@ -11,8 +12,9 @@ from utils import make_password, delta, message
 
 # Settings
 env.hosts = ['ec2-46-137-58-134.eu-west-1.compute.amazonaws.com']
-env.user = 'ec2-user'
 env.key_filename = '~/.ssh/aws.pem'
+
+env.user = 'ec2-user'
 env.start_time = time()
 
 
@@ -58,6 +60,10 @@ def update():
     message('Udating system software ...', color=yellow)
     sudo('yum -y update')
 
+def upgrade():
+    message('Upgrading system software ...', color=yellow)
+    sudo('yum -y upgrade')
+
 def free_memory():
     message('Outputting free memory:', color=yellow)
     run('free -m')
@@ -80,6 +86,8 @@ def install_pip():
     message('Installing PIP for python ...', color=yellow)
     sudo('easy_install pip')
 
+''' Web servers
+'''
 def install_nginx():
     message('Installing NGINX ...', color=yellow)
     sudo('yum -y install nginx')
@@ -88,10 +96,23 @@ def install_nginx():
     #returns number of cores
     #cat /proc/cpuinfo | grep processor | wc -l
 
+def install_apache():
+    pass
+
+''' Caching
+'''
 def install_memcached():
     message('Installing Memcached ...', color=yellow)
     sudo('yum -y install memcached')
 
+def install_redis():
+    pass
+    
+def install_varnish():
+    pass
+
+''' WSGI servers
+'''
 def install_uwsgi():
     message('Installing uWSGI ...', color=yellow)
     # requirements for uWSGI
@@ -101,6 +122,11 @@ def install_uwsgi():
     # install uWSGI
     sudo('pip install uwsgi')
 
+def install_gunicorn():
+    pass
+
+''' Databases
+'''
 def install_mysql():
     message('Installing & configuring MySQL ...', color=yellow)
     password = make_password(10)
@@ -116,7 +142,9 @@ def install_mysql():
     run('mysql -uroot -p' + password + ' -e \"FLUSH PRIVILEGES;\"')
 
     # Write the output file
-    
+
+def install_postgres():
+    pass
 
 # Environment setup commands
 def python_requirements():
@@ -129,9 +157,14 @@ def repository():
     pass
 
 def upload_tar_from_git():
+    package = os.path.basename(os.getcwd())
+    
+    '''
     message('Creating an archive from the current Git master branch and uploading it ..', color=yellow)
     local('git archive --format=tar master | gzip > release.tar.gz')
     sudo('mkdir /srv/release && chown ec2-user /srv/release/')
     put('release.tar.gz', '/srv/release/')
     run('cd /srv/release/ && tar zxf release.tar.gz && rm release.tar.gz')
     local('rm release.tar.gz')
+    '''
+    
