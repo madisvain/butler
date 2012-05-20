@@ -1,7 +1,7 @@
 #coding: utf-8
 
 import os
-from time import time, localtime
+from time import time, localtime, strftime
 
 from fabric.api import env, run, sudo, local, put
 from fabric.utils import puts
@@ -11,12 +11,14 @@ from utils import make_password, delta, message
 
 
 # Settings
-env.hosts = ['ec2-46-137-58-134.eu-west-1.compute.amazonaws.com']
+env.hosts = ['ec2-46-137-20-135.eu-west-1.compute.amazonaws.com']
 env.key_filename = '~/.ssh/aws.pem'
 
+# Optional settings
 env.user = 'ec2-user'
 env.start_time = time()
-
+env.project_name = os.path.basename(os.getcwd())
+env.release = strftime('%Y%m%d%H%M%S')
 
 """
 Master commands
@@ -46,8 +48,8 @@ def build():
     
     update()
     install()
-    #virtualenv()
-    #deploy()
+    virtualenv()
+    upload_release()
 
     message('Your build is complete!', color=green)
 
@@ -104,9 +106,6 @@ def install_apache():
 def install_memcached():
     message('Installing Memcached ...', color=yellow)
     sudo('yum -y install memcached')
-
-def install_redis():
-    pass
     
 def install_varnish():
     pass
@@ -146,25 +145,26 @@ def install_mysql():
 def install_postgres():
     pass
 
-# Environment setup commands
+''' Python environment commands
+'''
 def python_requirements():
+    message('Installing required python packages ...', color=yellow)
+    run('source /srv/%(project_name)s/env/bin/activate' % env)
+    # Read the file in a forloop and print out what gets installed
     run('pip install -r templates/requirements.txt')
 
 def virtualenv():
-    pass
-    
-def repository():
-    pass
+    sudo('pip install virtualenv')
+    sudo('mkdir -p /srv/%(project_name)s && chown ec2-user:ec2-user /srv/%(project_name)s' % env)
+    run('virtualenv --distribute env')
 
-def upload_tar_from_git():
-    package = os.path.basename(os.getcwd())
-    
-    '''
+''' Git repository commands
+'''
+def upload_release():
     message('Creating an archive from the current Git master branch and uploading it ..', color=yellow)
     local('git archive --format=tar master | gzip > release.tar.gz')
-    sudo('mkdir /srv/release && chown ec2-user /srv/release/')
-    put('release.tar.gz', '/srv/release/')
-    run('cd /srv/release/ && tar zxf release.tar.gz && rm release.tar.gz')
-    local('rm release.tar.gz')
-    '''
+    sudo('mkdir -p /srv/%(project_name)s/releases/%(release)s && chown -R ec2-user:ec2-user /srv/%(project_name)s' % env)
+    put('release.tar.gz' % env , '/srv/%(project_name)s/releases/%(release)s.tar.gz' % env)
+    run('cd /srv/%(project_name)s/releases/%(release)s && tar zxf /srv/%(project_name)s/releases/%(release)s.tar.gz' % env)
+    run('rm /srv/%(project_name)s/releases/%(release)s.tar.gz' % env)
     

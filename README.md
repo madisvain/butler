@@ -27,9 +27,9 @@ TODO
 ====
 1.
 * Apache installation and configuration
+* Gunicorn installatiin and configuration
 * Postgres installation and configuration
 * Varnish installation and configuration
-* Redis installation and configuration
 
 2.
 * AWS instance spawning automation with Boto
@@ -55,3 +55,9 @@ For a django application you could use settings.py to access or load settings.
 
 See http://readthedocs.org/docs/fabric/en/latest/api/contrib/django.html
 
+Requirements
+============
+
+* Fabric - https://github.com/fabric/fabric by Christian Vest Hansen and Jeffrey E. Forcier
+* git - http://git-scm.com/
+* Boto - https://github.com/boto/boto by Mitch Garnaat
