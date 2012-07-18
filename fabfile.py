@@ -135,6 +135,7 @@ def install_mysql():
     sudo('chkconfig mysqld on')
     
     # Scure the mysql installation
+    # http://dev.mysql.com/doc/refman/5.0/en/default-privileges.html
     run('mysqladmin -u root password ' + password)
     run('mysql -uroot -p' + password + ' -e \"DROP USER \'\'@\'localhost\';\"')
     run('mysql -uroot -p' + password + ' -e \"DROP DATABASE test;\"')
